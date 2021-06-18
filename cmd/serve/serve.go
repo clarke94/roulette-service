@@ -11,15 +11,22 @@ import (
 	"time"
 
 	"github.com/clarke94/roulette-service/cmd/serve/openapi"
+	"github.com/clarke94/roulette-service/cmd/serve/table"
+	storage "github.com/clarke94/roulette-service/storage/table"
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	gormlog "gorm.io/gorm/logger"
 )
 
 const (
 	serverTimeoutSeconds = 10
 	serverMaxHeaderBytes = 1 << 20
+	dbSlowThreshold      = 200 * time.Millisecond
 )
 
 // Handler provides a Run method when the serve command is executed.
@@ -41,13 +48,49 @@ func New() *cobra.Command {
 func (h *Handler) Run(_ *cobra.Command, _ []string) {
 	router := gin.Default()
 	logger := logrus.New()
+	db := h.newDatabase(logger)
+	validate := validator.New()
 
 	openapi.Module(router, logger)
+	table.Module(router, logger, db, validate)
 
-	newServer(router, logger)
+	h.newServer(router, logger)
 }
 
-func newServer(router *gin.Engine, logger *logrus.Logger) {
+func (h *Handler) newDatabase(logger *logrus.Logger) *gorm.DB {
+	config := &gorm.Config{
+		Logger: gormlog.New(
+			logger,
+			gormlog.Config{
+				SlowThreshold: dbSlowThreshold,
+				LogLevel:      gormlog.Warn,
+				Colorful:      true,
+			},
+		),
+	}
+
+	db, err := gorm.Open(postgres.Open(viper.GetString("DATABASE_URL")), config)
+	if err != nil {
+		logger.WithFields(logrus.Fields{
+			"error": err.Error(),
+		}).Fatalln("unable to initialize database")
+
+		return nil
+	}
+
+	err = db.AutoMigrate(storage.Table{})
+	if err != nil {
+		logger.WithFields(logrus.Fields{
+			"error": err.Error(),
+		}).Fatalln("unable to migrate database")
+
+		return nil
+	}
+
+	return db
+}
+
+func (h *Handler) newServer(router *gin.Engine, logger *logrus.Logger) {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 

@@ -5,6 +5,79 @@
     "description": "A micro-service that provides a REST API for roulette games.",
     "version": "0.1.0"
   },
+  "basePath": "/v1",
+  "schemes": [
+    "https"
+  ],
   "paths": {
+    "/table": {
+      "post": {
+        "summary": "Create table",
+        "description": "Create a new roulette table that has a minimum and maximum bet.",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "table",
+            "schema": {
+              "type": "object",
+              "required": [
+                "name",
+                "maximumBet",
+                "minimumBet",
+                "currency"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "A human readable name for the table"
+                },
+                "maximumBet": {
+                  "type": "integer",
+                  "minimum": 10,
+                  "description": "Maximum bets allowed on this table in the smallest currency unit. The maximum bet must be greater than 10 and minimumBet."
+                },
+                "minimumBet": {
+                  "type": "integer",
+                  "minimum": 10,
+                  "description": "Minimum bets allowed on this table in the smallest currency unit. The maximum bet must be greater than 10."
+                },
+                "currency": {
+                  "type": "string",
+                  "description": "Table currency code that all bets are placed in.",
+                  "enum": ["GBP", "USD", "EUR"]
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "Table ID"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "description": "Request error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
   }
 }

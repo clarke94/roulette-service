@@ -6,8 +6,26 @@ services:
     container_name: roulette-service
     build: .
     command: ./roulette-service serve
+    depends_on:
+      - postgres
     environment:
       PORT: 8080
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432?sslmode=disable
     ports:
     - 8080:8080
 
+  postgres:
+    container_name: roulette-postgres
+    image: postgres
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: roulette
+    volumes:
+      - pg-data:/var/lib/postgresql/data/
+
+volumes:
+  pg-data:
