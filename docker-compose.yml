@@ -1,0 +1,13 @@
+version: '3.7'
+
+services:
+
+  serve:
+    container_name: roulette-service
+    build: .
+    command: ./roulette-service serve
+    environment:
+      PORT: 8080
+    ports:
+    - 8080:8080
+
