@@ -31,3 +31,15 @@ func (s Storage) Create(ctx context.Context, model table.Table) (uuid.UUID, erro
 
 	return d.ID, nil
 }
+
+// List returns all tables from the database.
+func (s Storage) List(ctx context.Context) ([]table.Table, error) {
+	var tables []Table
+
+	res := s.DB.WithContext(ctx).Find(&tables)
+	if res.Error != nil {
+		return []table.Table{}, res.Error
+	}
+
+	return storageListToDomain(tables), nil
+}

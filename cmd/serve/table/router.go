@@ -11,4 +11,5 @@ func NewRouter(router *gin.Engine, handler Handler) {
 	v1 := router.Group("/v1")
 
 	v1.Handle(http.MethodPost, "/table", handler.Create)
+	v1.Handle(http.MethodGet, "/table", handler.List)
 }

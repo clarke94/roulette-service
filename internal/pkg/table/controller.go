@@ -12,11 +12,13 @@ import (
 var (
 	ErrValidation = errors.New("invalid table")
 	ErrCreate     = errors.New("unable to create table")
+	ErrList       = errors.New("unable to fetch all tables")
 )
 
 // StorageProvider provides an interface to the Storage layer.
 type StorageProvider interface {
 	Create(ctx context.Context, model Table) (uuid.UUID, error)
+	List(ctx context.Context) ([]Table, error)
 }
 
 // Controller provides a domain controller.
@@ -56,4 +58,18 @@ func (c Controller) Create(ctx context.Context, model Table) (uuid.UUID, error) 
 	}
 
 	return id, nil
+}
+
+// List returns all tables from the storage layer.
+func (c Controller) List(ctx context.Context) ([]Table, error) {
+	tables, err := c.Storage.List(ctx)
+	if err != nil {
+		c.Logger.WithFields(logrus.Fields{
+			"error": err.Error(),
+		}).Error(ErrList.Error())
+
+		return []Table{}, ErrList
+	}
+
+	return tables, nil
 }

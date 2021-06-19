@@ -29,3 +29,23 @@ func domainToStorage(t table.Table) Table {
 		Currency:   t.Currency,
 	}
 }
+
+func storageToDomain(t *Table) table.Table {
+	return table.Table{
+		ID:         t.ID,
+		Name:       t.Name,
+		MaximumBet: t.MaximumBet,
+		MinimumBet: t.MinimumBet,
+		Currency:   t.Currency,
+	}
+}
+
+func storageListToDomain(t []Table) []table.Table {
+	tables := make([]table.Table, len(t))
+
+	for i := range t {
+		tables[i] = storageToDomain(&t[i])
+	}
+
+	return tables
+}

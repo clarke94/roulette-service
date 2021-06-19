@@ -54,13 +54,67 @@
           }
         ],
         "responses": {
-          "200": {
+          "201": {
             "description": "OK",
             "schema": {
               "properties": {
                 "id": {
                   "type": "string",
-                  "description": "Table ID"
+                  "description": "Table ID",
+                  "format": "uuid"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "description": "Request error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "List tables",
+        "description": "An array of tables that are found",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "description": "Table ID",
+                    "format": "uuid"
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "Human readable table name"
+                  },
+                  "maximumBet": {
+                    "type": "integer",
+                    "description": "Maximum bet that can be placed on this table"
+                  },
+                  "minimumBet": {
+                    "type": "integer",
+                    "description": "Minimum bet that can be placed on this table"
+                  },
+                  "currency": {
+                    "type": "string",
+                    "description": "Table currency code that all bets are placed in.",
+                    "enum": ["GBP", "USD", "EUR"]
+                  }
                 }
               }
             }

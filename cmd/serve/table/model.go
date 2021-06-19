@@ -7,10 +7,11 @@ import (
 
 // Table is a presentation API model.
 type Table struct {
-	Name       string `json:"name"`
-	MaximumBet int    `json:"maximumBet"`
-	MinimumBet int    `json:"minimumBet"`
-	Currency   string `json:"currency"`
+	ID         uuid.UUID `json:"id,omitempty"`
+	Name       string    `json:"name"`
+	MaximumBet int       `json:"maximumBet"`
+	MinimumBet int       `json:"minimumBet"`
+	Currency   string    `json:"currency"`
 }
 
 // Create is a presentation API model for the Create response.
@@ -25,4 +26,18 @@ type Error struct {
 
 func presentationToDomain(t Table) table.Table {
 	return table.Table(t)
+}
+
+func domainToPresentation(t table.Table) Table {
+	return Table(t)
+}
+
+func domainListToPresentation(t []table.Table) []Table {
+	tables := make([]Table, len(t))
+
+	for i := range t {
+		tables[i] = domainToPresentation(t[i])
+	}
+
+	return tables
 }
