@@ -203,10 +203,135 @@ func TestController_List(t *testing.T) {
 	}
 }
 
+func TestController_Update(t *testing.T) {
+	tests := []struct {
+		name      string
+		Logger    *logrus.Logger
+		Validator *validator.Validate
+		Storage   StorageProvider
+		model     Table
+		wantErr   error
+	}{
+		{
+			name:      "expect success given valid table",
+			Logger:    logrus.New(),
+			Validator: validator.New(),
+			Storage:   mockStorage{},
+			model: Table{
+				ID:         uuid.New(),
+				Name:       "foo",
+				MaximumBet: 10,
+				MinimumBet: 10,
+				Currency:   "GBP",
+			},
+			wantErr: nil,
+		},
+		{
+			name:      "expect fail given no ID",
+			Logger:    logrus.New(),
+			Validator: validator.New(),
+			Storage:   mockStorage{},
+			model: Table{
+				Name:       "foo",
+				MaximumBet: 1,
+				MinimumBet: 10,
+				Currency:   "GBP",
+			},
+			wantErr: ErrValidation,
+		},
+		{
+			name:      "expect fail given invalid maximum bet",
+			Logger:    logrus.New(),
+			Validator: validator.New(),
+			Storage:   mockStorage{},
+			model: Table{
+				ID:         uuid.New(),
+				Name:       "foo",
+				MaximumBet: 1,
+				MinimumBet: 10,
+				Currency:   "GBP",
+			},
+			wantErr: ErrValidation,
+		},
+		{
+			name:      "expect fail given invalid minimum bet",
+			Logger:    logrus.New(),
+			Validator: validator.New(),
+			Storage:   mockStorage{},
+			model: Table{
+				ID:         uuid.New(),
+				Name:       "foo",
+				MaximumBet: 10,
+				MinimumBet: 1,
+				Currency:   "GBP",
+			},
+			wantErr: ErrValidation,
+		},
+		{
+			name:      "expect fail given maximum bet less than minimum bet",
+			Logger:    logrus.New(),
+			Validator: validator.New(),
+			Storage:   mockStorage{},
+			model: Table{
+				ID:         uuid.New(),
+				Name:       "foo",
+				MaximumBet: 10,
+				MinimumBet: 20,
+				Currency:   "GBP",
+			},
+			wantErr: ErrValidation,
+		},
+		{
+			name:      "expect fail given invalid currency code",
+			Logger:    logrus.New(),
+			Validator: validator.New(),
+			Storage:   mockStorage{},
+			model: Table{
+				ID:         uuid.New(),
+				Name:       "foo",
+				MaximumBet: 10,
+				MinimumBet: 10,
+				Currency:   "foo",
+			},
+			wantErr: ErrValidation,
+		},
+		{
+			name:      "expect fail given storage error",
+			Logger:    logrus.New(),
+			Validator: validator.New(),
+			Storage: mockStorage{
+				GivenError: errors.New("foo"),
+			},
+			model: Table{
+				ID:         uuid.New(),
+				Name:       "foo",
+				MaximumBet: 10,
+				MinimumBet: 10,
+				Currency:   "GBP",
+			},
+			wantErr: ErrUpdate,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := New(tt.Logger, tt.Storage, tt.Validator)
+			_, err := c.Update(context.Background(), tt.model)
+
+			if !cmp.Equal(err, tt.wantErr, cmpopts.EquateErrors()) {
+				t.Error(cmp.Diff(err, tt.wantErr, cmpopts.EquateErrors()))
+			}
+		})
+	}
+}
+
 type mockStorage struct {
 	GivenList  []Table
 	GivenID    uuid.UUID
 	GivenError error
+}
+
+func (m mockStorage) Update(_ context.Context, _ Table) (uuid.UUID, error) {
+	return m.GivenID, m.GivenError
 }
 
 func (m mockStorage) List(_ context.Context) ([]Table, error) {

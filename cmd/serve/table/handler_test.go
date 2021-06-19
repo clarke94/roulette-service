@@ -136,10 +136,64 @@ func TestHandler_List(t *testing.T) {
 	}
 }
 
+func TestHandler_Update(t *testing.T) {
+	tests := []struct {
+		name       string
+		controller ControllerProvider
+		body       []byte
+		wantCode   int
+	}{
+		{
+			name: "expect 200 given table updated",
+			controller: mockController{
+				GivenID: uuid.New(),
+			},
+			body:     []byte(`{}`),
+			wantCode: http.StatusOK,
+		},
+		{
+			name: "expect 400 given no body",
+			controller: mockController{
+				GivenID: uuid.New(),
+			},
+			body:     nil,
+			wantCode: http.StatusBadRequest,
+		},
+		{
+			name: "expect 400 given Controller error",
+			controller: mockController{
+				GivenError: errors.New("foo"),
+			},
+			body:     nil,
+			wantCode: http.StatusBadRequest,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := httptest.NewRequest(http.MethodPost, "/", bytes.NewReader(tt.body))
+			w := httptest.NewRecorder()
+			ctx, _ := gin.CreateTestContext(w)
+
+			ctx.Request = r
+
+			h := NewHandler(tt.controller)
+			h.Update(ctx)
+
+			if !cmp.Equal(w.Code, tt.wantCode) {
+				t.Error(w.Code, tt.wantCode)
+			}
+		})
+	}
+}
+
 type mockController struct {
 	GivenList  []table.Table
 	GivenID    uuid.UUID
 	GivenError error
+}
+
+func (m mockController) Update(_ context.Context, _ table.Table) (uuid.UUID, error) {
+	return m.GivenID, m.GivenError
 }
 
 func (m mockController) List(_ context.Context) ([]table.Table, error) {

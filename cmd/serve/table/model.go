@@ -14,8 +14,8 @@ type Table struct {
 	Currency   string    `json:"currency"`
 }
 
-// Create is a presentation API model for the Create response.
-type Create struct {
+// Upsert is a presentation API model for the Upsert response.
+type Upsert struct {
 	ID uuid.UUID `json:"id"`
 }
 

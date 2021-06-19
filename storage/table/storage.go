@@ -2,11 +2,14 @@ package table
 
 import (
 	"context"
+	"errors"
 
 	"github.com/clarke94/roulette-service/internal/pkg/table"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
+
+var errNoChange = errors.New("no change")
 
 // Storage provides a Storage layer.
 type Storage struct {
@@ -42,4 +45,20 @@ func (s Storage) List(ctx context.Context) ([]table.Table, error) {
 	}
 
 	return storageListToDomain(tables), nil
+}
+
+// Update inserts a new record for the given Table.
+func (s Storage) Update(ctx context.Context, model table.Table) (uuid.UUID, error) {
+	d := domainToStorage(model)
+
+	res := s.DB.WithContext(ctx).Model(&d).Updates(&d)
+	if res.Error != nil {
+		return uuid.Nil, res.Error
+	}
+
+	if res.RowsAffected == 0 {
+		return uuid.Nil, errNoChange
+	}
+
+	return d.ID, nil
 }

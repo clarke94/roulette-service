@@ -22,7 +22,7 @@ type Table struct {
 
 func domainToStorage(t table.Table) Table {
 	return Table{
-		ID:         uuid.New(),
+		ID:         t.ID,
 		Name:       t.Name,
 		MaximumBet: t.MaximumBet,
 		MinimumBet: t.MinimumBet,
