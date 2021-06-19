@@ -324,10 +324,62 @@ func TestController_Update(t *testing.T) {
 	}
 }
 
+func TestController_Delete(t *testing.T) {
+	tests := []struct {
+		name      string
+		Logger    *logrus.Logger
+		Validator *validator.Validate
+		Storage   StorageProvider
+		id        uuid.UUID
+		wantErr   error
+	}{
+		{
+			name:      "expect success given valid table",
+			Logger:    logrus.New(),
+			Validator: validator.New(),
+			Storage:   mockStorage{},
+			id:        uuid.New(),
+			wantErr:   nil,
+		},
+		{
+			name:      "expect fail given no ID",
+			Logger:    logrus.New(),
+			Validator: validator.New(),
+			Storage:   mockStorage{},
+			id:        uuid.Nil,
+			wantErr:   ErrValidation,
+		},
+		{
+			name:      "expect fail given storage error",
+			Logger:    logrus.New(),
+			Validator: validator.New(),
+			Storage: mockStorage{
+				GivenError: errors.New("foo"),
+			},
+			id:      uuid.New(),
+			wantErr: ErrDelete,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := New(tt.Logger, tt.Storage, tt.Validator)
+			_, err := c.Delete(context.Background(), tt.id)
+
+			if !cmp.Equal(err, tt.wantErr, cmpopts.EquateErrors()) {
+				t.Error(cmp.Diff(err, tt.wantErr, cmpopts.EquateErrors()))
+			}
+		})
+	}
+}
+
 type mockStorage struct {
 	GivenList  []Table
 	GivenID    uuid.UUID
 	GivenError error
+}
+
+func (m mockStorage) Delete(_ context.Context, _ uuid.UUID) (uuid.UUID, error) {
+	return m.GivenID, m.GivenError
 }
 
 func (m mockStorage) Update(_ context.Context, _ Table) (uuid.UUID, error) {

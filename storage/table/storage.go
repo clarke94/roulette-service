@@ -62,3 +62,17 @@ func (s Storage) Update(ctx context.Context, model table.Table) (uuid.UUID, erro
 
 	return d.ID, nil
 }
+
+// Delete deletes a table for the given ID.
+func (s Storage) Delete(ctx context.Context, id uuid.UUID) (uuid.UUID, error) {
+	res := s.DB.WithContext(ctx).Delete(&Table{}, id)
+	if res.Error != nil {
+		return uuid.Nil, res.Error
+	}
+
+	if res.RowsAffected == 0 {
+		return uuid.Nil, errNoChange
+	}
+
+	return id, nil
+}

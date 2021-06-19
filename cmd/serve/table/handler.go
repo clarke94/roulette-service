@@ -14,6 +14,7 @@ type ControllerProvider interface {
 	Create(ctx context.Context, model table.Table) (uuid.UUID, error)
 	List(ctx context.Context) ([]table.Table, error)
 	Update(ctx context.Context, model table.Table) (uuid.UUID, error)
+	Delete(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
 }
 
 // Handler provides a presentation handler.
@@ -33,6 +34,8 @@ func (h Handler) Create(ctx *gin.Context) {
 	var model Table
 	if err := ctx.ShouldBindJSON(&model); err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, err)
+
+		return
 	}
 
 	id, err := h.Controller.Create(ctx, presentationToDomain(model))
@@ -62,6 +65,8 @@ func (h Handler) Update(ctx *gin.Context) {
 	var model Table
 	if err := ctx.ShouldBindJSON(&model); err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, err)
+
+		return
 	}
 
 	id, err := h.Controller.Update(ctx, presentationToDomain(model))
@@ -72,4 +77,23 @@ func (h Handler) Update(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, Upsert{ID: id})
+}
+
+// Delete invokes the Delete controller and returns an id.
+func (h Handler) Delete(ctx *gin.Context) {
+	id, err := uuid.Parse(ctx.Param("id"))
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, Error{Error: err.Error()})
+
+		return
+	}
+
+	deletedID, err := h.Controller.Delete(ctx, id)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, Error{Error: err.Error()})
+
+		return
+	}
+
+	ctx.JSON(http.StatusOK, Upsert{ID: deletedID})
 }

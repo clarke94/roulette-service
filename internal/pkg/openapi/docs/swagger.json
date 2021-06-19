@@ -206,6 +206,49 @@
           }
         }
       }
+    },
+    "/table/{id}": {
+      "delete": {
+        "summary": "Delete table",
+        "description": "Delete an existing roulette table by table ID",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "type": "string",
+            "format": "uuid",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "Deleted table ID",
+                  "format": "uuid"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "description": "Request error"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   }
 }

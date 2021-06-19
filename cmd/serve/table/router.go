@@ -13,4 +13,5 @@ func NewRouter(router *gin.Engine, handler Handler) {
 	v1.Handle(http.MethodPost, "/table", handler.Create)
 	v1.Handle(http.MethodGet, "/table", handler.List)
 	v1.Handle(http.MethodPut, "/table", handler.Update)
+	v1.Handle(http.MethodDelete, "/table/:id", handler.Delete)
 }

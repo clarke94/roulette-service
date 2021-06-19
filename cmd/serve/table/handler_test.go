@@ -67,7 +67,7 @@ func TestHandler_Create(t *testing.T) {
 			controller: mockController{
 				GivenError: errors.New("foo"),
 			},
-			body:     nil,
+			body:     []byte(`{}`),
 			wantCode: http.StatusBadRequest,
 		},
 	}
@@ -164,7 +164,7 @@ func TestHandler_Update(t *testing.T) {
 			controller: mockController{
 				GivenError: errors.New("foo"),
 			},
-			body:     nil,
+			body:     []byte(`{}`),
 			wantCode: http.StatusBadRequest,
 		},
 	}
@@ -186,10 +186,63 @@ func TestHandler_Update(t *testing.T) {
 	}
 }
 
+func TestHandler_Delete(t *testing.T) {
+	tests := []struct {
+		name       string
+		controller ControllerProvider
+		id         string
+		wantCode   int
+	}{
+		{
+			name: "expect 200 given table deleted",
+			controller: mockController{
+				GivenID: uuid.New(),
+			},
+			id:       uuid.New().String(),
+			wantCode: http.StatusOK,
+		},
+		{
+			name:       "expect 400 given invalid ID",
+			controller: mockController{},
+			id:         "foo",
+			wantCode:   http.StatusBadRequest,
+		},
+		{
+			name: "expect 400 given Controller error",
+			controller: mockController{
+				GivenError: errors.New("foo"),
+			},
+			id:       uuid.New().String(),
+			wantCode: http.StatusBadRequest,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := NewHandler(tt.controller)
+
+			r := httptest.NewRequest(http.MethodDelete, "/"+tt.id, nil)
+			w := httptest.NewRecorder()
+			ctx, router := gin.CreateTestContext(w)
+			ctx.Request = r
+
+			router.Handle(http.MethodDelete, "/:id", h.Delete)
+			router.ServeHTTP(w, r)
+
+			if !cmp.Equal(w.Code, tt.wantCode) {
+				t.Error(w.Code, tt.wantCode)
+			}
+		})
+	}
+}
+
 type mockController struct {
 	GivenList  []table.Table
 	GivenID    uuid.UUID
 	GivenError error
+}
+
+func (m mockController) Delete(_ context.Context, _ uuid.UUID) (uuid.UUID, error) {
+	return m.GivenID, m.GivenError
 }
 
 func (m mockController) Update(_ context.Context, _ table.Table) (uuid.UUID, error) {
