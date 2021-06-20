@@ -52,3 +52,13 @@ func storageListToDomain(t []Bet) []bet.Bet {
 
 	return bets
 }
+
+func domainListToStorage(t []bet.Bet) []Bet {
+	bets := make([]Bet, len(t))
+
+	for i := range t {
+		bets[i] = domainToStorage(&t[i])
+	}
+
+	return bets
+}

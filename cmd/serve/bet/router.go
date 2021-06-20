@@ -10,6 +10,7 @@ import (
 func NewRouter(router *gin.Engine, handler Handler) {
 	v1 := router.Group("/v1")
 
+	v1.Handle(http.MethodPost, "/table/:table/play", handler.Play)
 	v1.Handle(http.MethodPost, "/table/:table/bet", handler.Create)
 	v1.Handle(http.MethodGet, "/table/:table/bet", handler.List)
 	v1.Handle(http.MethodPut, "/table/:table/bet", handler.Update)

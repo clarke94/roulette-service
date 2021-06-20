@@ -403,171 +403,6 @@ func TestController_CreateUpdateValidate(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name:      "expect fail given odd/even type with invalid bet",
-			Logger:    logrus.New(),
-			Validator: validator.New(),
-			Storage:   mockStorage{},
-			model: Bet{
-				ID:       uuid.Must(uuid.Parse("8117bb87-148c-4fb1-8971-a2d4373b3f19")),
-				TableID:  uuid.Must(uuid.Parse("8117bb87-148c-4fb1-8971-a2d4373b3f19")),
-				Bet:      "foo",
-				Type:     TypeOddEven,
-				Amount:   100,
-				Currency: "GBP",
-			},
-			wantErr: ErrValidation,
-		},
-		{
-			name:      "expect success given odd/even type with even bet",
-			Logger:    logrus.New(),
-			Validator: validator.New(),
-			Storage:   mockStorage{},
-			model: Bet{
-				ID:       uuid.Must(uuid.Parse("8117bb87-148c-4fb1-8971-a2d4373b3f19")),
-				TableID:  uuid.Must(uuid.Parse("8117bb87-148c-4fb1-8971-a2d4373b3f19")),
-				Bet:      "even",
-				Type:     TypeOddEven,
-				Amount:   100,
-				Currency: "GBP",
-			},
-			wantErr: nil,
-		},
-		{
-			name:      "expect success given odd/even type with odd bet",
-			Logger:    logrus.New(),
-			Validator: validator.New(),
-			Storage:   mockStorage{},
-			model: Bet{
-				ID:       uuid.Must(uuid.Parse("8117bb87-148c-4fb1-8971-a2d4373b3f19")),
-				TableID:  uuid.Must(uuid.Parse("8117bb87-148c-4fb1-8971-a2d4373b3f19")),
-				Bet:      "odd",
-				Type:     TypeOddEven,
-				Amount:   100,
-				Currency: "GBP",
-			},
-			wantErr: nil,
-		},
-		{
-			name:      "expect fail given high/low type with invalid bet",
-			Logger:    logrus.New(),
-			Validator: validator.New(),
-			Storage:   mockStorage{},
-			model: Bet{
-				ID:       uuid.Must(uuid.Parse("8117bb87-148c-4fb1-8971-a2d4373b3f19")),
-				TableID:  uuid.Must(uuid.Parse("8117bb87-148c-4fb1-8971-a2d4373b3f19")),
-				Bet:      "foo",
-				Type:     TypeHighLow,
-				Amount:   100,
-				Currency: "GBP",
-			},
-			wantErr: ErrValidation,
-		},
-		{
-			name:      "expect success given high/low type with low bet",
-			Logger:    logrus.New(),
-			Validator: validator.New(),
-			Storage:   mockStorage{},
-			model: Bet{
-				ID:       uuid.Must(uuid.Parse("8117bb87-148c-4fb1-8971-a2d4373b3f19")),
-				TableID:  uuid.Must(uuid.Parse("8117bb87-148c-4fb1-8971-a2d4373b3f19")),
-				Bet:      "low",
-				Type:     TypeHighLow,
-				Amount:   100,
-				Currency: "GBP",
-			},
-			wantErr: nil,
-		},
-		{
-			name:      "expect success given high/low type with high bet",
-			Logger:    logrus.New(),
-			Validator: validator.New(),
-			Storage:   mockStorage{},
-			model: Bet{
-				ID:       uuid.Must(uuid.Parse("8117bb87-148c-4fb1-8971-a2d4373b3f19")),
-				TableID:  uuid.Must(uuid.Parse("8117bb87-148c-4fb1-8971-a2d4373b3f19")),
-				Bet:      "high",
-				Type:     TypeHighLow,
-				Amount:   100,
-				Currency: "GBP",
-			},
-			wantErr: nil,
-		},
-		{
-			name:      "expect fail given column type with invalid bet",
-			Logger:    logrus.New(),
-			Validator: validator.New(),
-			Storage:   mockStorage{},
-			model: Bet{
-				ID:       uuid.Must(uuid.Parse("8117bb87-148c-4fb1-8971-a2d4373b3f19")),
-				TableID:  uuid.Must(uuid.Parse("8117bb87-148c-4fb1-8971-a2d4373b3f19")),
-				Bet:      "foo",
-				Type:     TypeColumn,
-				Amount:   100,
-				Currency: "GBP",
-			},
-			wantErr: ErrValidation,
-		},
-		{
-			name:      "expect success given column type with column 1 bet",
-			Logger:    logrus.New(),
-			Validator: validator.New(),
-			Storage:   mockStorage{},
-			model: Bet{
-				ID:       uuid.Must(uuid.Parse("8117bb87-148c-4fb1-8971-a2d4373b3f19")),
-				TableID:  uuid.Must(uuid.Parse("8117bb87-148c-4fb1-8971-a2d4373b3f19")),
-				Bet:      "1",
-				Type:     TypeColumn,
-				Amount:   100,
-				Currency: "GBP",
-			},
-			wantErr: nil,
-		},
-		{
-			name:      "expect fail given high/low type with invalid bet",
-			Logger:    logrus.New(),
-			Validator: validator.New(),
-			Storage:   mockStorage{},
-			model: Bet{
-				ID:       uuid.Must(uuid.Parse("8117bb87-148c-4fb1-8971-a2d4373b3f19")),
-				TableID:  uuid.Must(uuid.Parse("8117bb87-148c-4fb1-8971-a2d4373b3f19")),
-				Bet:      "foo",
-				Type:     TypeDozen,
-				Amount:   100,
-				Currency: "GBP",
-			},
-			wantErr: ErrValidation,
-		},
-		{
-			name:      "expect success given dozen type with 13-24 bet",
-			Logger:    logrus.New(),
-			Validator: validator.New(),
-			Storage:   mockStorage{},
-			model: Bet{
-				ID:       uuid.Must(uuid.Parse("8117bb87-148c-4fb1-8971-a2d4373b3f19")),
-				TableID:  uuid.Must(uuid.Parse("8117bb87-148c-4fb1-8971-a2d4373b3f19")),
-				Bet:      "13-24",
-				Type:     TypeDozen,
-				Amount:   100,
-				Currency: "GBP",
-			},
-			wantErr: nil,
-		},
-		{
-			name:      "expect success given dozen type with 1-12 bet",
-			Logger:    logrus.New(),
-			Validator: validator.New(),
-			Storage:   mockStorage{},
-			model: Bet{
-				ID:       uuid.Must(uuid.Parse("8117bb87-148c-4fb1-8971-a2d4373b3f19")),
-				TableID:  uuid.Must(uuid.Parse("8117bb87-148c-4fb1-8971-a2d4373b3f19")),
-				Bet:      "1-12",
-				Type:     TypeDozen,
-				Amount:   100,
-				Currency: "GBP",
-			},
-			wantErr: nil,
-		},
-		{
 			name:      "expect success given straight type with 36 bet",
 			Logger:    logrus.New(),
 			Validator: validator.New(),
@@ -601,7 +436,7 @@ func TestController_CreateUpdateValidate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			c := New(tt.Logger, tt.Storage, tt.Validator)
-			_, createErr := c.Update(context.Background(), tt.model)
+			_, createErr := c.Create(context.Background(), tt.model)
 			_, updateErr := c.Update(context.Background(), tt.model)
 
 			if !cmp.Equal(createErr, tt.wantErr, cmpopts.EquateErrors()) {
@@ -610,6 +445,149 @@ func TestController_CreateUpdateValidate(t *testing.T) {
 
 			if !cmp.Equal(updateErr, tt.wantErr, cmpopts.EquateErrors()) {
 				t.Error(cmp.Diff(updateErr, tt.wantErr, cmpopts.EquateErrors()))
+			}
+		})
+	}
+}
+
+func TestController_Play(t *testing.T) {
+	tests := []struct {
+		name      string
+		Logger    *logrus.Logger
+		Validator *validator.Validate
+		Storage   StorageProvider
+		tableID   uuid.UUID
+		want      Result
+		wantErr   error
+	}{
+		{
+			name:      "expect success given valid input",
+			Logger:    logrus.New(),
+			Validator: validator.New(),
+			Storage: mockStorage{
+				GivenList: []Bet{},
+			},
+			tableID: uuid.Must(uuid.Parse("8117bb87-148c-4fb1-8971-a2d4373b3f19")),
+			want: Result{
+				Winners: []Winner{},
+			},
+			wantErr: nil,
+		},
+		{
+			name:      "expect success given valid input with found bets",
+			Logger:    logrus.New(),
+			Validator: validator.New(),
+			Storage: mockStorage{
+				GivenList: []Bet{
+					{
+						ID:       uuid.Must(uuid.Parse("8117bb87-148c-4fb1-8971-a2d4373b3f19")),
+						TableID:  uuid.Must(uuid.Parse("8117bb87-148c-4fb1-8971-a2d4373b3f19")),
+						Bet:      "10",
+						Type:     "straight",
+						Amount:   1000,
+						Currency: "GBP",
+					},
+				},
+			},
+			tableID: uuid.Must(uuid.Parse("8117bb87-148c-4fb1-8971-a2d4373b3f19")),
+			want: Result{
+				Winners: []Winner{
+					{
+						BetID:    uuid.Must(uuid.Parse("8117bb87-148c-4fb1-8971-a2d4373b3f19")),
+						Amount:   1000,
+						Currency: "GBP",
+					},
+				},
+			},
+			wantErr: nil,
+		},
+		{
+			name:      "expect fail given storage error",
+			Logger:    logrus.New(),
+			Validator: validator.New(),
+			Storage: mockStorage{
+				GivenList:  []Bet{},
+				GivenError: errors.New("foo"),
+			},
+			tableID: uuid.Must(uuid.Parse("8117bb87-148c-4fb1-8971-a2d4373b3f19")),
+			want:    Result{},
+			wantErr: ErrList,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := New(tt.Logger, tt.Storage, tt.Validator)
+
+			got, err := c.Play(context.Background(), tt.tableID)
+			if !cmp.Equal(err, tt.wantErr, cmpopts.EquateErrors()) {
+				t.Error(cmp.Diff(err, tt.wantErr, cmpopts.EquateErrors()))
+			}
+
+			if !cmp.Equal(got, tt.want, cmpopts.IgnoreFields(Result{}, "Number", "Color")) {
+				t.Error(cmp.Diff(err, tt.want, cmpopts.IgnoreFields(Result{}, "Number", "Color")))
+			}
+		})
+	}
+}
+
+func TestController_getColor(t *testing.T) {
+	tests := []struct {
+		name      string
+		Logger    *logrus.Logger
+		Validator *validator.Validate
+		Storage   StorageProvider
+		number    int
+		want      string
+	}{
+		{
+			name:      "expect green given 0",
+			Logger:    logrus.New(),
+			Validator: validator.New(),
+			Storage:   mockStorage{},
+			number:    0,
+			want:      "green",
+		},
+		{
+			name:      "expect black given 2",
+			Logger:    logrus.New(),
+			Validator: validator.New(),
+			Storage:   mockStorage{},
+			number:    2,
+			want:      "black",
+		},
+		{
+			name:      "expect red given 3",
+			Logger:    logrus.New(),
+			Validator: validator.New(),
+			Storage:   mockStorage{},
+			number:    3,
+			want:      "red",
+		},
+		{
+			name:      "expect black given 13",
+			Logger:    logrus.New(),
+			Validator: validator.New(),
+			Storage:   mockStorage{},
+			number:    13,
+			want:      "black",
+		},
+		{
+			name:      "expect red given 14",
+			Logger:    logrus.New(),
+			Validator: validator.New(),
+			Storage:   mockStorage{},
+			number:    14,
+			want:      "red",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := New(tt.Logger, tt.Storage, tt.Validator)
+
+			got := c.getColor(tt.number)
+
+			if !cmp.Equal(got, tt.want) {
+				t.Error(cmp.Diff(got, tt.want))
 			}
 		})
 	}
@@ -629,7 +607,7 @@ func (m mockStorage) Update(_ context.Context, _ Bet) (uuid.UUID, error) {
 	return m.GivenID, m.GivenError
 }
 
-func (m mockStorage) List(_ context.Context, _ uuid.UUID) ([]Bet, error) {
+func (m mockStorage) List(_ context.Context, _ uuid.UUID, _ ...Bet) ([]Bet, error) {
 	return m.GivenList, m.GivenError
 }
 

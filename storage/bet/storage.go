@@ -36,10 +36,22 @@ func (s Storage) Create(ctx context.Context, model bet.Bet) (uuid.UUID, error) {
 }
 
 // List returns all bets from the database for a given table.
-func (s Storage) List(ctx context.Context, tableID uuid.UUID) ([]bet.Bet, error) {
+func (s Storage) List(ctx context.Context, tableID uuid.UUID, filters ...bet.Bet) ([]bet.Bet, error) {
 	var bets []Bet
 
-	res := s.DB.WithContext(ctx).Where(&Bet{TableID: tableID}).Find(&bets)
+	queryFilters := domainListToStorage(filters)
+
+	db := s.DB.WithContext(ctx)
+
+	queryBuilder := db
+	for _, filter := range queryFilters {
+		queryBuilder = queryBuilder.Or(filter)
+	}
+
+	db = db.Where(&Bet{TableID: tableID}, queryBuilder)
+
+	res := db.Find(&bets)
+
 	if res.Error != nil {
 		return []bet.Bet{}, res.Error
 	}

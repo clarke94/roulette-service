@@ -15,6 +15,7 @@ type ControllerProvider interface {
 	List(ctx context.Context, tableID uuid.UUID) ([]bet.Bet, error)
 	Update(ctx context.Context, model bet.Bet) (uuid.UUID, error)
 	Delete(ctx context.Context, tableID, id uuid.UUID) (uuid.UUID, error)
+	Play(ctx context.Context, tableID uuid.UUID) (bet.Result, error)
 }
 
 // Handler provides a presentation handler.
@@ -124,4 +125,23 @@ func (h Handler) Delete(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, Upsert{ID: deletedID})
+}
+
+// Play invokes the Play controller and returns response.
+func (h Handler) Play(ctx *gin.Context) {
+	tableID, err := uuid.Parse(ctx.Param("table"))
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, Error{Error: err.Error()})
+
+		return
+	}
+
+	results, err := h.Controller.Play(ctx, tableID)
+	if err != nil {
+		ctx.AbortWithStatusJSON(http.StatusBadRequest, Error{Error: err.Error()})
+
+		return
+	}
+
+	ctx.JSON(http.StatusOK, domainResultToDomain(results))
 }

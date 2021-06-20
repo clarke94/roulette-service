@@ -279,17 +279,13 @@
               "properties": {
                 "bet": {
                   "type": "string",
-                  "description": "The bet that is placed. The bet placed will be validated against the bet type. \n #### red/black \n Bet on a red number or black number. \n #### odd/even \n Bet on an odd number or even number. \n #### high/low \n Bet on a high (19-36) number or low (1-18) number. \n #### dozen \n Bet on a dozen numbers, '1-12' or '13-24' or '25-36'. \n #### straight \n Bet on a single number from 0 to 36 \n #### column \n Bet on the outcome being a number within one of the three columns of twelve numbers. \n 1. 1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34  \n 2. 2, 5, 8, 11, 14, 17, 20, 23, 26, 29, 32, 35 \n 3. 3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36"
+                  "description": "The bet that is placed. The bet placed will be validated against the bet type. \n #### red/black \n Bet on a red number or black number. \n #### straight \n Bet on a single number from 0 to 36"
                 },
                 "type": {
                   "type": "string",
                   "description": "The type of bet that is placed.",
                   "enum": [
                     "red/black",
-                    "odd/even",
-                    "high/low",
-                    "column",
-                    "dozen",
                     "straight"
                   ]
                 },
@@ -420,17 +416,13 @@
                 },
                 "bet": {
                   "type": "string",
-                  "description": "The bet that is placed. The bet placed will be validated against the bet type. \n #### red/black \n Bet on a red number or black number. \n #### odd/even \n Bet on an odd number or even number. \n #### high/low \n Bet on a high (19-36) number or low (1-18) number.\n #### dozen \n Bet on a dozen numbers, '1-12' or '13-24' or '25-36'. \n #### straight \n Bet on a single number from 0 to 36 \n #### column \n Bet on the outcome being a number within one of the three columns of twelve numbers. \n 1. 1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34  \n 2. 2, 5, 8, 11, 14, 17, 20, 23, 26, 29, 32, 35 \n 3. 3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36"
+                  "description": "The bet that is placed. The bet placed will be validated against the bet type. \n #### red/black \n Bet on a red number or black number. \n #### straight \n Bet on a single number from 0 to 36"
                 },
                 "type": {
                   "type": "string",
                   "description": "The type of bet that is placed.",
                   "enum": [
                     "red/black",
-                    "odd/even",
-                    "high/low",
-                    "column",
-                    "dozen",
                     "straight"
                   ]
                 },
@@ -506,6 +498,75 @@
                   "type": "string",
                   "description": "Deleted bet ID",
                   "format": "uuid"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "description": "Request error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/table/{table}/play": {
+      "post": {
+        "summary": "Play Roulette",
+        "description": "Play a round of roulette where the roulette result is generated, the table is cleared of all bets and the winners are listed in the response.",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "table",
+            "type": "string",
+            "format": "uuid",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "properties": {
+                "number": {
+                  "type": "integer",
+                  "description": "Winning number the roulette ball landed on"
+                },
+                "color": {
+                  "type": "string",
+                  "description": "The color the roulette ball landed on",
+                  "enum": ["red", "black", "green"]
+                },
+                "winners": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "betId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "The Bet ID that won"
+                      },
+                      "amount": {
+                        "type": "integer",
+                        "description": "The prize money"
+                      },
+                      "currency": {
+                        "type": "string",
+                        "description": "prize money currency",
+                        "enum": ["GBP", "EUR", "USD"]
+                      }
+                    }
+                  }
                 }
               }
             }

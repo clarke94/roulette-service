@@ -286,10 +286,74 @@ func TestHandler_Delete(t *testing.T) {
 	}
 }
 
+func TestHandler_Play(t *testing.T) {
+	tests := []struct {
+		name       string
+		controller ControllerProvider
+		tableId    string
+		wantCode   int
+	}{
+		{
+			name: "expect 200 given game played",
+			controller: mockController{
+				GivenResult: bet.Result{
+					Number: 10,
+					Color:  "red",
+					Winners: []bet.Winner{
+						{
+							BetID:    uuid.New(),
+							Amount:   10,
+							Currency: "GBP",
+						},
+					},
+				},
+			},
+			tableId:  uuid.New().String(),
+			wantCode: http.StatusOK,
+		},
+		{
+			name:       "expect 400 given invalid table ID",
+			controller: mockController{},
+			tableId:    "foo",
+			wantCode:   http.StatusBadRequest,
+		},
+		{
+			name: "expect 400 given Controller error",
+			controller: mockController{
+				GivenError: errors.New("foo"),
+			},
+			tableId:  uuid.New().String(),
+			wantCode: http.StatusBadRequest,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			h := NewHandler(tt.controller)
+
+			r := httptest.NewRequest(http.MethodPost, "/"+tt.tableId+"/play", nil)
+			w := httptest.NewRecorder()
+			ctx, router := gin.CreateTestContext(w)
+			ctx.Request = r
+
+			router.Handle(http.MethodPost, "/:table/play", h.Play)
+			router.ServeHTTP(w, r)
+
+			if !cmp.Equal(w.Code, tt.wantCode) {
+				t.Error(w.Code, tt.wantCode)
+			}
+		})
+	}
+}
+
 type mockController struct {
-	GivenList  []bet.Bet
-	GivenID    uuid.UUID
-	GivenError error
+	GivenResult bet.Result
+	GivenList   []bet.Bet
+	GivenID     uuid.UUID
+	GivenError  error
+}
+
+func (m mockController) Play(_ context.Context, _ uuid.UUID) (bet.Result, error) {
+	return m.GivenResult, m.GivenError
 }
 
 func (m mockController) Delete(_ context.Context, _, _ uuid.UUID) (uuid.UUID, error) {

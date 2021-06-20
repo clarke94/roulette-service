@@ -2,7 +2,10 @@ package bet
 
 import (
 	"context"
+	"crypto/rand"
 	"errors"
+	"math/big"
+	"strconv"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
@@ -20,7 +23,7 @@ var (
 // StorageProvider provides an interface to the Storage layer.
 type StorageProvider interface {
 	Create(ctx context.Context, model Bet) (uuid.UUID, error)
-	List(ctx context.Context, tableID uuid.UUID) ([]Bet, error)
+	List(ctx context.Context, tableID uuid.UUID, filters ...Bet) ([]Bet, error)
 	Update(ctx context.Context, model Bet) (uuid.UUID, error)
 	Delete(ctx context.Context, tableID, id uuid.UUID) (uuid.UUID, error)
 }
@@ -147,25 +150,84 @@ func (c Controller) Delete(ctx context.Context, tableID, id uuid.UUID) (uuid.UUI
 	return deletedID, nil
 }
 
+// Play runs the roulette algorithm, clears the table and returns the winners.
+func (c Controller) Play(ctx context.Context, tableID uuid.UUID) (Result, error) {
+	number := c.getNumber()
+	color := c.getColor(number)
+
+	filters := c.winnerFilters(number, color)
+
+	bets, err := c.Storage.List(ctx, tableID, filters...)
+	if err != nil {
+		c.Logger.WithFields(logrus.Fields{
+			"error": err.Error(),
+		}).Error(ErrList.Error())
+
+		return Result{}, ErrList
+	}
+
+	result := Result{
+		Number:  number,
+		Color:   color,
+		Winners: betListToWinner(bets),
+	}
+
+	return result, nil
+}
+
+func (c Controller) winnerFilters(number int, color string) []Bet {
+	filters := make([]Bet, 0)
+
+	filters = append(filters, Bet{
+		Bet:  strconv.Itoa(number),
+		Type: TypeStraight,
+	})
+
+	filters = append(filters, Bet{
+		Bet:  color,
+		Type: TypeRedBlack,
+	})
+
+	return filters
+}
+
+func (c Controller) getNumber() int {
+	bg := big.NewInt(36)
+
+	number, _ := rand.Int(rand.Reader, bg)
+
+	return int(number.Int64())
+}
+
+func (c Controller) getColor(number int) string {
+	if number == 0 {
+		return colorGreen
+	}
+
+	if number >= 1 && number <= 10 || number >= 19 && number <= 28 {
+		if number%2 == 0 {
+			return colorBlack
+		}
+
+		return colorRed
+	}
+
+	if number%2 == 0 {
+		return colorRed
+	}
+
+	return colorBlack
+}
+
 func (c Controller) validate(b Bet) error {
-	if _, ok := TypeMultiplierMap[b.Type]; !ok {
-		return ErrValidation
+	if _, ok := TypeMultiplierMap[b.Type]; ok {
+		switch b.Type {
+		case TypeRedBlack:
+			return c.Validator.Var(b.Bet, "oneof=red black")
+		case TypeStraight:
+			return c.Validator.Var(b.Bet, "number,gte=0,lte=36")
+		}
 	}
 
-	switch b.Type {
-	case TypeRedBlack:
-		return c.Validator.Var(b.Bet, "oneof=red black")
-	case TypeOddEven:
-		return c.Validator.Var(b.Bet, "oneof=odd even")
-	case TypeHighLow:
-		return c.Validator.Var(b.Bet, "oneof=high low")
-	case TypeColumn:
-		return c.Validator.Var(b.Bet, "oneof=1 2 3")
-	case TypeDozen:
-		return c.Validator.Var(b.Bet, "oneof=1-12 13-24 25-36")
-	case TypeStraight:
-		return c.Validator.Var(b.Bet, "number,gte=0,lte=36")
-	}
-
-	return nil
+	return ErrValidation
 }

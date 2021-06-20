@@ -24,6 +24,33 @@ type Error struct {
 	Error string `json:"error"`
 }
 
+// Result is the round result from a game.
+type Result struct {
+	Number  int      `json:"number"`
+	Color   string   `json:"color"`
+	Winners []Winner `json:"winners"`
+}
+
+// Winner is a winning bet from a round.
+type Winner struct {
+	BetID    uuid.UUID `json:"betId"`
+	Amount   int64     `json:"amount"`
+	Currency string    `json:"currency"`
+}
+
+func domainResultToDomain(t bet.Result) Result {
+	winners := make([]Winner, len(t.Winners))
+	for i := range t.Winners {
+		winners[i] = Winner(t.Winners[i])
+	}
+
+	return Result{
+		Number:  t.Number,
+		Color:   t.Color,
+		Winners: winners,
+	}
+}
+
 func presentationToDomain(t Bet, tableID uuid.UUID) bet.Bet {
 	return bet.Bet{
 		ID:       t.ID,
