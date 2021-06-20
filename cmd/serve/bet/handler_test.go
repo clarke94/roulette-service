@@ -1,17 +1,17 @@
-package table
+package bet
 
 import (
 	"bytes"
 	"context"
 	"errors"
-	"github.com/clarke94/roulette-service/internal/pkg/table"
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/clarke94/roulette-service/internal/pkg/bet"
+	"github.com/gin-gonic/gin"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/uuid"
 )
 
 func TestNewHandler(t *testing.T) {
@@ -43,22 +43,34 @@ func TestHandler_Create(t *testing.T) {
 	tests := []struct {
 		name       string
 		controller ControllerProvider
+		tableId    string
 		body       []byte
 		wantCode   int
 	}{
 		{
-			name: "expect 201 given table created",
+			name: "expect 201 given bet created",
 			controller: mockController{
 				GivenID: uuid.New(),
 			},
+			tableId:  uuid.New().String(),
 			body:     []byte(`{}`),
 			wantCode: http.StatusCreated,
+		},
+		{
+			name: "expect 400 given invalid table id",
+			controller: mockController{
+				GivenID: uuid.New(),
+			},
+			tableId:  "foo",
+			body:     []byte(`{}`),
+			wantCode: http.StatusBadRequest,
 		},
 		{
 			name: "expect 400 given no body",
 			controller: mockController{
 				GivenID: uuid.New(),
 			},
+			tableId:  uuid.New().String(),
 			body:     nil,
 			wantCode: http.StatusBadRequest,
 		},
@@ -67,20 +79,22 @@ func TestHandler_Create(t *testing.T) {
 			controller: mockController{
 				GivenError: errors.New("foo"),
 			},
+			tableId:  uuid.New().String(),
 			body:     []byte(`{}`),
 			wantCode: http.StatusBadRequest,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := httptest.NewRequest(http.MethodPost, "/", bytes.NewReader(tt.body))
-			w := httptest.NewRecorder()
-			ctx, _ := gin.CreateTestContext(w)
+			h := NewHandler(tt.controller)
 
+			r := httptest.NewRequest(http.MethodPost, "/"+tt.tableId, bytes.NewReader(tt.body))
+			w := httptest.NewRecorder()
+			ctx, router := gin.CreateTestContext(w)
 			ctx.Request = r
 
-			h := NewHandler(tt.controller)
-			h.Create(ctx)
+			router.Handle(http.MethodPost, "/:table", h.Create)
+			router.ServeHTTP(w, r)
 
 			if !cmp.Equal(w.Code, tt.wantCode) {
 				t.Error(w.Code, tt.wantCode)
@@ -93,41 +107,53 @@ func TestHandler_List(t *testing.T) {
 	tests := []struct {
 		name       string
 		controller ControllerProvider
+		tableId    string
 		wantCode   int
 	}{
 		{
-			name: "expect 200 given table created",
+			name: "expect 200 given bet created",
 			controller: mockController{
-				GivenList: []table.Table{
+				GivenList: []bet.Bet{
 					{
-						ID:         uuid.Nil,
-						Name:       "Table 1",
-						MaximumBet: 10000,
-						MinimumBet: 1000,
-						Currency:   "GBP",
+						ID:       uuid.Nil,
+						TableID:  uuid.Nil,
+						Amount:   10,
+						Type:     bet.TypeStraight,
+						Currency: "GBP",
 					},
 				},
 			},
+			tableId:  uuid.New().String(),
 			wantCode: http.StatusOK,
+		},
+		{
+			name: "expect 400 given invalid table ID",
+			controller: mockController{
+				GivenError: errors.New("foo"),
+			},
+			tableId:  "foo",
+			wantCode: http.StatusBadRequest,
 		},
 		{
 			name: "expect 400 given Controller error",
 			controller: mockController{
 				GivenError: errors.New("foo"),
 			},
+			tableId:  uuid.New().String(),
 			wantCode: http.StatusBadRequest,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := httptest.NewRequest(http.MethodGet, "/", nil)
-			w := httptest.NewRecorder()
-			ctx, _ := gin.CreateTestContext(w)
+			h := NewHandler(tt.controller)
 
+			r := httptest.NewRequest(http.MethodGet, "/"+tt.tableId, nil)
+			w := httptest.NewRecorder()
+			ctx, router := gin.CreateTestContext(w)
 			ctx.Request = r
 
-			h := NewHandler(tt.controller)
-			h.List(ctx)
+			router.Handle(http.MethodGet, "/:table", h.List)
+			router.ServeHTTP(w, r)
 
 			if !cmp.Equal(w.Code, tt.wantCode) {
 				t.Error(w.Code, tt.wantCode)
@@ -140,22 +166,34 @@ func TestHandler_Update(t *testing.T) {
 	tests := []struct {
 		name       string
 		controller ControllerProvider
+		tableId    string
 		body       []byte
 		wantCode   int
 	}{
 		{
-			name: "expect 200 given table updated",
+			name: "expect 200 given bet updated",
 			controller: mockController{
 				GivenID: uuid.New(),
 			},
+			tableId:  uuid.New().String(),
 			body:     []byte(`{}`),
 			wantCode: http.StatusOK,
+		},
+		{
+			name: "expect 400 given invalid table ID",
+			controller: mockController{
+				GivenID: uuid.New(),
+			},
+			tableId:  "foo",
+			body:     []byte(`{}`),
+			wantCode: http.StatusBadRequest,
 		},
 		{
 			name: "expect 400 given no body",
 			controller: mockController{
 				GivenID: uuid.New(),
 			},
+			tableId:  uuid.New().String(),
 			body:     nil,
 			wantCode: http.StatusBadRequest,
 		},
@@ -164,20 +202,22 @@ func TestHandler_Update(t *testing.T) {
 			controller: mockController{
 				GivenError: errors.New("foo"),
 			},
+			tableId:  uuid.New().String(),
 			body:     []byte(`{}`),
 			wantCode: http.StatusBadRequest,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := httptest.NewRequest(http.MethodPost, "/", bytes.NewReader(tt.body))
-			w := httptest.NewRecorder()
-			ctx, _ := gin.CreateTestContext(w)
+			h := NewHandler(tt.controller)
 
+			r := httptest.NewRequest(http.MethodPut, "/"+tt.tableId, bytes.NewReader(tt.body))
+			w := httptest.NewRecorder()
+			ctx, router := gin.CreateTestContext(w)
 			ctx.Request = r
 
-			h := NewHandler(tt.controller)
-			h.Update(ctx)
+			router.Handle(http.MethodPut, "/:table", h.Update)
+			router.ServeHTTP(w, r)
 
 			if !cmp.Equal(w.Code, tt.wantCode) {
 				t.Error(w.Code, tt.wantCode)
@@ -191,20 +231,30 @@ func TestHandler_Delete(t *testing.T) {
 		name       string
 		controller ControllerProvider
 		id         string
+		tableId    string
 		wantCode   int
 	}{
 		{
-			name: "expect 200 given table deleted",
+			name: "expect 200 given bet deleted",
 			controller: mockController{
 				GivenID: uuid.New(),
 			},
 			id:       uuid.New().String(),
+			tableId:  uuid.New().String(),
 			wantCode: http.StatusOK,
 		},
 		{
 			name:       "expect 400 given invalid ID",
 			controller: mockController{},
 			id:         "foo",
+			tableId:    uuid.New().String(),
+			wantCode:   http.StatusBadRequest,
+		},
+		{
+			name:       "expect 400 given invalid table ID",
+			controller: mockController{},
+			tableId:    "foo",
+			id:         uuid.New().String(),
 			wantCode:   http.StatusBadRequest,
 		},
 		{
@@ -213,6 +263,7 @@ func TestHandler_Delete(t *testing.T) {
 				GivenError: errors.New("foo"),
 			},
 			id:       uuid.New().String(),
+			tableId:  uuid.New().String(),
 			wantCode: http.StatusBadRequest,
 		},
 	}
@@ -220,12 +271,12 @@ func TestHandler_Delete(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			h := NewHandler(tt.controller)
 
-			r := httptest.NewRequest(http.MethodDelete, "/"+tt.id, nil)
+			r := httptest.NewRequest(http.MethodDelete, "/"+tt.tableId+"/"+tt.id, nil)
 			w := httptest.NewRecorder()
 			ctx, router := gin.CreateTestContext(w)
 			ctx.Request = r
 
-			router.Handle(http.MethodDelete, "/:table", h.Delete)
+			router.Handle(http.MethodDelete, "/:table/:bet", h.Delete)
 			router.ServeHTTP(w, r)
 
 			if !cmp.Equal(w.Code, tt.wantCode) {
@@ -236,23 +287,23 @@ func TestHandler_Delete(t *testing.T) {
 }
 
 type mockController struct {
-	GivenList  []table.Table
+	GivenList  []bet.Bet
 	GivenID    uuid.UUID
 	GivenError error
 }
 
-func (m mockController) Delete(_ context.Context, _ uuid.UUID) (uuid.UUID, error) {
+func (m mockController) Delete(_ context.Context, _, _ uuid.UUID) (uuid.UUID, error) {
 	return m.GivenID, m.GivenError
 }
 
-func (m mockController) Update(_ context.Context, _ table.Table) (uuid.UUID, error) {
+func (m mockController) Update(_ context.Context, _ bet.Bet) (uuid.UUID, error) {
 	return m.GivenID, m.GivenError
 }
 
-func (m mockController) List(_ context.Context) ([]table.Table, error) {
+func (m mockController) List(_ context.Context, _ uuid.UUID) ([]bet.Bet, error) {
 	return m.GivenList, m.GivenError
 }
 
-func (m mockController) Create(_ context.Context, _ table.Table) (uuid.UUID, error) {
+func (m mockController) Create(_ context.Context, _ bet.Bet) (uuid.UUID, error) {
 	return m.GivenID, m.GivenError
 }

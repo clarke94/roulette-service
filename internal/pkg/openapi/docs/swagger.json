@@ -207,7 +207,7 @@
         }
       }
     },
-    "/table/{id}": {
+    "/table/{table}": {
       "delete": {
         "summary": "Delete table",
         "description": "Delete an existing roulette table by table ID",
@@ -217,7 +217,7 @@
         "parameters": [
           {
             "in": "path",
-            "name": "id",
+            "name": "table",
             "type": "string",
             "format": "uuid",
             "required": true
@@ -231,6 +231,280 @@
                 "id": {
                   "type": "string",
                   "description": "Deleted table ID",
+                  "format": "uuid"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "description": "Request error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/table/{table}/bet": {
+      "post": {
+        "summary": "Create Bet",
+        "description": "Create a bet for a given table",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "table",
+            "type": "string",
+            "format": "uuid",
+            "required": true
+          },
+          {
+            "in": "body",
+            "name": "bet",
+            "schema": {
+              "type": "object",
+              "required": [
+                "bet",
+                "type",
+                "amount",
+                "currency"
+              ],
+              "properties": {
+                "bet": {
+                  "type": "string",
+                  "description": "The bet that is placed. The bet placed will be validated against the bet type. \n #### red/black \n Bet on a red number or black number. \n #### odd/even \n Bet on an odd number or even number. \n #### high/low \n Bet on a high (19-36) number or low (1-18) number. \n #### dozen \n Bet on a dozen numbers, '1-12' or '13-24' or '25-36'. \n #### straight \n Bet on a single number from 0 to 36 \n #### column \n Bet on the outcome being a number within one of the three columns of twelve numbers. \n 1. 1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34  \n 2. 2, 5, 8, 11, 14, 17, 20, 23, 26, 29, 32, 35 \n 3. 3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36"
+                },
+                "type": {
+                  "type": "string",
+                  "description": "The type of bet that is placed.",
+                  "enum": [
+                    "red/black",
+                    "odd/even",
+                    "high/low",
+                    "column",
+                    "dozen",
+                    "straight"
+                  ]
+                },
+                "amount": {
+                  "type": "integer",
+                  "description": "Placed bet in the smallest currency unit."
+                },
+                "currency": {
+                  "type": "string",
+                  "description": "Currency of the amount provided",
+                  "enum": ["GBP", "USD", "EUR"]
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "OK",
+            "schema": {
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "Bet ID",
+                  "format": "uuid"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "description": "Request error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "List bets",
+        "description": "An array of bets that are found for a given table",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "table",
+            "type": "string",
+            "format": "uuid",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "description": "Table ID",
+                    "format": "uuid"
+                  },
+                  "amount": {
+                    "type": "integer",
+                    "description": "Placed bet in the smallest currency unit."
+                  },
+                  "currency": {
+                    "type": "string",
+                    "description": "Currency of the amount provided",
+                    "enum": ["GBP", "USD", "EUR"]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "description": "Request error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update bet",
+        "description": "Update an existing bet on a table.",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "table",
+            "type": "string",
+            "format": "uuid",
+            "required": true
+          },
+          {
+            "in": "body",
+            "name": "table",
+            "schema": {
+              "type": "object",
+              "required": [
+                "id",
+                "bet",
+                "type",
+                "amount",
+                "currency"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "Bet ID",
+                  "format": "uuid"
+                },
+                "bet": {
+                  "type": "string",
+                  "description": "The bet that is placed. The bet placed will be validated against the bet type. \n #### red/black \n Bet on a red number or black number. \n #### odd/even \n Bet on an odd number or even number. \n #### high/low \n Bet on a high (19-36) number or low (1-18) number.\n #### dozen \n Bet on a dozen numbers, '1-12' or '13-24' or '25-36'. \n #### straight \n Bet on a single number from 0 to 36 \n #### column \n Bet on the outcome being a number within one of the three columns of twelve numbers. \n 1. 1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34  \n 2. 2, 5, 8, 11, 14, 17, 20, 23, 26, 29, 32, 35 \n 3. 3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36"
+                },
+                "type": {
+                  "type": "string",
+                  "description": "The type of bet that is placed.",
+                  "enum": [
+                    "red/black",
+                    "odd/even",
+                    "high/low",
+                    "column",
+                    "dozen",
+                    "straight"
+                  ]
+                },
+                "amount": {
+                  "type": "integer",
+                  "description": "Placed bet in the smallest currency unit."
+                },
+                "currency": {
+                  "type": "string",
+                  "description": "Currency of the amount provided",
+                  "enum": ["GBP", "USD", "EUR"]
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "Bet ID",
+                  "format": "uuid"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "properties": {
+                "error": {
+                  "type": "string",
+                  "description": "Request error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/table/{table}/bet/{bet}": {
+      "delete": {
+        "summary": "Delete bet",
+        "description": "Delete an existing bet by bet ID for a given table",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "table",
+            "type": "string",
+            "format": "uuid",
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "bet",
+            "type": "string",
+            "format": "uuid",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "Deleted bet ID",
                   "format": "uuid"
                 }
               }

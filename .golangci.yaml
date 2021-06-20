@@ -51,18 +51,18 @@ linters:
     - deadcode
     - depguard
     - dogsled
-    - dupl
+#    - dupl
     - errcheck
     - exportloopref
     - exhaustive
     - funlen
     - gochecknoinits
     - goconst
-    - gocritic
+#    - gocritic
     - gocyclo
     - gofmt
     - goimports
-    - gomnd
+#    - gomnd
     - goprintffuncname
     - gosec
     - gosimple

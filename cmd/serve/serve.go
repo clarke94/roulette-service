@@ -5,6 +5,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/clarke94/roulette-service/cmd/serve/bet"
+	betStorage "github.com/clarke94/roulette-service/storage/bet"
 	"net/http"
 	"os/signal"
 	"syscall"
@@ -53,6 +55,7 @@ func (h *Handler) Run(_ *cobra.Command, _ []string) {
 
 	openapi.Module(router, logger)
 	table.Module(router, logger, db, validate)
+	bet.Module(router, logger, db, validate)
 
 	h.newServer(router, logger)
 }
@@ -78,7 +81,7 @@ func (h *Handler) newDatabase(logger *logrus.Logger) *gorm.DB {
 		return nil
 	}
 
-	err = db.AutoMigrate(storage.Table{})
+	err = db.AutoMigrate(storage.Table{}, betStorage.Bet{})
 	if err != nil {
 		logger.WithFields(logrus.Fields{
 			"error": err.Error(),

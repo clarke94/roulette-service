@@ -81,7 +81,7 @@ func (h Handler) Update(ctx *gin.Context) {
 
 // Delete invokes the Delete controller and returns an id.
 func (h Handler) Delete(ctx *gin.Context) {
-	id, err := uuid.Parse(ctx.Param("id"))
+	id, err := uuid.Parse(ctx.Param("table"))
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, Error{Error: err.Error()})
 

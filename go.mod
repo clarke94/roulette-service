@@ -3,8 +3,10 @@ module github.com/clarke94/roulette-service
 go 1.16
 
 require (
+	github.com/Rhymond/go-money v1.0.2
 	github.com/gin-gonic/gin v1.7.2
-	github.com/go-playground/validator v9.31.0+incompatible
+	github.com/go-playground/validator v9.31.0+incompatible // indirect
+	github.com/go-playground/validator/v10 v10.4.1
 	github.com/google/go-cmp v0.5.6
 	github.com/google/uuid v1.0.0
 	github.com/sirupsen/logrus v1.4.2
