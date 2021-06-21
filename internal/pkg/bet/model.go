@@ -1,23 +1,13 @@
 package bet
 
-import (
-	"github.com/google/uuid"
-)
-
 // Bet is a domain model.
 type Bet struct {
-	ID       uuid.UUID
-	TableID  uuid.UUID `validate:"required"`
-	Bet      string    `validate:"required"`
-	Type     string    `validate:"required"`
-	Amount   int64     `validate:"required"`
-	Currency string    `validate:"required"`
-}
-
-// Update is a domain model for a bet update.
-type Update struct {
-	ID uuid.UUID `validate:"required"`
-	Bet
+	ID       string
+	TableID  string
+	Bet      string
+	Type     string
+	Amount   int64
+	Currency string
 }
 
 // Result is the round result from a game.
@@ -29,7 +19,7 @@ type Result struct {
 
 // Winner is a winning bet from a round.
 type Winner struct {
-	BetID    uuid.UUID
+	BetID    string
 	Amount   int64
 	Currency string
 }

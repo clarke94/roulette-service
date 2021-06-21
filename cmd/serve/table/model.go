@@ -2,21 +2,31 @@ package table
 
 import (
 	"github.com/clarke94/roulette-service/internal/pkg/table"
-	"github.com/google/uuid"
 )
+
+// IDParam is the URL parameter binding the bet ID.
+type IDParam struct {
+	Table string `uri:"table" binding:"required,uuid"`
+}
 
 // Table is a presentation API model.
 type Table struct {
-	ID         uuid.UUID `json:"id,omitempty"`
-	Name       string    `json:"name"`
-	MaximumBet int       `json:"maximumBet"`
-	MinimumBet int       `json:"minimumBet"`
-	Currency   string    `json:"currency"`
+	ID         string `json:"id,omitempty"`
+	Name       string `json:"name" binding:"required"`
+	MaximumBet int    `json:"maximumBet" binding:"required,gte=10,gtefield=MinimumBet"`
+	MinimumBet int    `json:"minimumBet" binding:"required,gte=10"`
+	Currency   string `json:"currency" binding:"required,oneof=GBP USD EUR"`
+}
+
+// Update is a Table with a required ID binding.
+type Update struct {
+	ID string `json:"id" binding:"required,uuid"`
+	Table
 }
 
 // Upsert is a presentation API model for the Upsert response.
 type Upsert struct {
-	ID uuid.UUID `json:"id"`
+	ID string `json:"id"`
 }
 
 // Error is a presentation API model for the Error response.

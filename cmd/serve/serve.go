@@ -16,7 +16,6 @@ import (
 	betStorage "github.com/clarke94/roulette-service/storage/bet"
 	storage "github.com/clarke94/roulette-service/storage/table"
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -51,11 +50,10 @@ func (h *Handler) Run(_ *cobra.Command, _ []string) {
 	router := gin.Default()
 	logger := logrus.New()
 	db := h.newDatabase(logger)
-	validate := validator.New()
 
 	openapi.Module(router, logger)
-	table.Module(router, logger, db, validate)
-	bet.Module(router, logger, db, validate)
+	table.Module(router, logger, db)
+	bet.Module(router, logger, db)
 
 	h.newServer(router, logger)
 }

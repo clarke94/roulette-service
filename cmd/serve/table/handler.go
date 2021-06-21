@@ -6,15 +6,14 @@ import (
 
 	"github.com/clarke94/roulette-service/internal/pkg/table"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 // ControllerProvider provides an interface for the domain controller.
 type ControllerProvider interface {
-	Create(ctx context.Context, model table.Table) (uuid.UUID, error)
+	Create(ctx context.Context, model table.Table) (string, error)
 	List(ctx context.Context) ([]table.Table, error)
-	Update(ctx context.Context, model table.Table) (uuid.UUID, error)
-	Delete(ctx context.Context, id uuid.UUID) (uuid.UUID, error)
+	Update(ctx context.Context, model table.Table) (string, error)
+	Delete(ctx context.Context, id string) (string, error)
 }
 
 // Handler provides a presentation handler.
@@ -32,9 +31,7 @@ func NewHandler(controller ControllerProvider) Handler {
 // Create invokes the Create controller and returns response.
 func (h Handler) Create(ctx *gin.Context) {
 	var model Table
-	if err := ctx.ShouldBindJSON(&model); err != nil {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, err)
-
+	if err := ctx.BindJSON(&model); err != nil {
 		return
 	}
 
@@ -62,14 +59,20 @@ func (h Handler) List(ctx *gin.Context) {
 
 // Update invokes the Update controller and returns response.
 func (h Handler) Update(ctx *gin.Context) {
-	var model Table
-	if err := ctx.ShouldBindJSON(&model); err != nil {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, err)
-
+	var model Update
+	if err := ctx.BindJSON(&model); err != nil {
 		return
 	}
 
-	id, err := h.Controller.Update(ctx, presentationToDomain(model))
+	domainModel := presentationToDomain(Table{
+		ID:         model.ID,
+		Name:       model.Table.Name,
+		MaximumBet: model.Table.MaximumBet,
+		MinimumBet: model.Table.MinimumBet,
+		Currency:   model.Table.Currency,
+	})
+
+	id, err := h.Controller.Update(ctx, domainModel)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, Error{Error: err.Error()})
 
@@ -81,14 +84,12 @@ func (h Handler) Update(ctx *gin.Context) {
 
 // Delete invokes the Delete controller and returns an id.
 func (h Handler) Delete(ctx *gin.Context) {
-	id, err := uuid.Parse(ctx.Param("table"))
-	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusBadRequest, Error{Error: err.Error()})
-
+	var param IDParam
+	if err := ctx.BindUri(&param); err != nil {
 		return
 	}
 
-	deletedID, err := h.Controller.Delete(ctx, id)
+	deletedID, err := h.Controller.Delete(ctx, param.Table)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusBadRequest, Error{Error: err.Error()})
 

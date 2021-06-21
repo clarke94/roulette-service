@@ -3,7 +3,6 @@ package table
 import (
 	"context"
 	"errors"
-	"github.com/go-playground/validator/v10"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
@@ -26,9 +25,9 @@ func TestNew(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := New(logrus.New(), mockStorage{}, validator.New())
-			if !cmp.Equal(got, tt.want, cmpopts.IgnoreUnexported(Controller{}), cmpopts.IgnoreFields(Controller{}, "Logger", "Validator")) {
-				t.Error(cmp.Diff(got, tt.want, cmpopts.IgnoreUnexported(Controller{}), cmpopts.IgnoreFields(Controller{}, "Logger", "Validator")))
+			got := New(logrus.New(), mockStorage{})
+			if !cmp.Equal(got, tt.want, cmpopts.IgnoreUnexported(Controller{}), cmpopts.IgnoreFields(Controller{}, "Logger")) {
+				t.Error(cmp.Diff(got, tt.want, cmpopts.IgnoreUnexported(Controller{}), cmpopts.IgnoreFields(Controller{}, "Logger")))
 			}
 		})
 	}
@@ -36,18 +35,16 @@ func TestNew(t *testing.T) {
 
 func TestController_Create(t *testing.T) {
 	tests := []struct {
-		name      string
-		Logger    *logrus.Logger
-		Validator *validator.Validate
-		Storage   StorageProvider
-		model     Table
-		wantErr   error
+		name    string
+		Logger  *logrus.Logger
+		Storage StorageProvider
+		model   Table
+		wantErr error
 	}{
 		{
-			name:      "expect success given valid table",
-			Logger:    logrus.New(),
-			Validator: validator.New(),
-			Storage:   mockStorage{},
+			name:    "expect success given valid table",
+			Logger:  logrus.New(),
+			Storage: mockStorage{},
 			model: Table{
 				Name:       "foo",
 				MaximumBet: 10,
@@ -57,57 +54,8 @@ func TestController_Create(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name:      "expect fail given invalid maximum bet",
-			Logger:    logrus.New(),
-			Validator: validator.New(),
-			Storage:   mockStorage{},
-			model: Table{
-				MaximumBet: 1,
-				MinimumBet: 10,
-				Currency:   "GBP",
-			},
-			wantErr: ErrValidation,
-		},
-		{
-			name:      "expect fail given invalid minimum bet",
-			Logger:    logrus.New(),
-			Validator: validator.New(),
-			Storage:   mockStorage{},
-			model: Table{
-				MaximumBet: 10,
-				MinimumBet: 1,
-				Currency:   "GBP",
-			},
-			wantErr: ErrValidation,
-		},
-		{
-			name:      "expect fail given maximum bet less than minimum bet",
-			Logger:    logrus.New(),
-			Validator: validator.New(),
-			Storage:   mockStorage{},
-			model: Table{
-				MaximumBet: 10,
-				MinimumBet: 20,
-				Currency:   "GBP",
-			},
-			wantErr: ErrValidation,
-		},
-		{
-			name:      "expect fail given invalid currency code",
-			Logger:    logrus.New(),
-			Validator: validator.New(),
-			Storage:   mockStorage{},
-			model: Table{
-				MaximumBet: 10,
-				MinimumBet: 10,
-				Currency:   "foo",
-			},
-			wantErr: ErrValidation,
-		},
-		{
-			name:      "expect fail given storage error",
-			Logger:    logrus.New(),
-			Validator: validator.New(),
+			name:   "expect fail given storage error",
+			Logger: logrus.New(),
 			Storage: mockStorage{
 				GivenError: errors.New("foo"),
 			},
@@ -122,7 +70,7 @@ func TestController_Create(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := New(tt.Logger, tt.Storage, tt.Validator)
+			c := New(tt.Logger, tt.Storage)
 			_, err := c.Create(context.Background(), tt.model)
 
 			if !cmp.Equal(err, tt.wantErr, cmpopts.EquateErrors()) {
@@ -136,15 +84,13 @@ func TestController_List(t *testing.T) {
 	tests := []struct {
 		name       string
 		Logger     *logrus.Logger
-		Validator  *validator.Validate
 		Storage    StorageProvider
 		wantTables []Table
 		wantErr    error
 	}{
 		{
-			name:      "expect success given no tables found",
-			Logger:    logrus.New(),
-			Validator: validator.New(),
+			name:   "expect success given no tables found",
+			Logger: logrus.New(),
 			Storage: mockStorage{
 				GivenList: []Table{},
 			},
@@ -152,9 +98,8 @@ func TestController_List(t *testing.T) {
 			wantErr:    nil,
 		},
 		{
-			name:      "expect success given tables found",
-			Logger:    logrus.New(),
-			Validator: validator.New(),
+			name:   "expect success given tables found",
+			Logger: logrus.New(),
 			Storage: mockStorage{
 				GivenList: []Table{
 					{
@@ -176,9 +121,8 @@ func TestController_List(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name:      "expect fail given storage error",
-			Logger:    logrus.New(),
-			Validator: validator.New(),
+			name:   "expect fail given storage error",
+			Logger: logrus.New(),
 			Storage: mockStorage{
 				GivenError: errors.New("foo"),
 				GivenList:  []Table{},
@@ -189,7 +133,7 @@ func TestController_List(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := New(tt.Logger, tt.Storage, tt.Validator)
+			c := New(tt.Logger, tt.Storage)
 			tables, err := c.List(context.Background())
 
 			if !cmp.Equal(err, tt.wantErr, cmpopts.EquateErrors()) {
@@ -205,20 +149,18 @@ func TestController_List(t *testing.T) {
 
 func TestController_Update(t *testing.T) {
 	tests := []struct {
-		name      string
-		Logger    *logrus.Logger
-		Validator *validator.Validate
-		Storage   StorageProvider
-		model     Table
-		wantErr   error
+		name    string
+		Logger  *logrus.Logger
+		Storage StorageProvider
+		model   Table
+		wantErr error
 	}{
 		{
-			name:      "expect success given valid table",
-			Logger:    logrus.New(),
-			Validator: validator.New(),
-			Storage:   mockStorage{},
+			name:    "expect success given valid table",
+			Logger:  logrus.New(),
+			Storage: mockStorage{},
 			model: Table{
-				ID:         uuid.New(),
+				ID:         uuid.New().String(),
 				Name:       "foo",
 				MaximumBet: 10,
 				MinimumBet: 10,
@@ -227,83 +169,13 @@ func TestController_Update(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name:      "expect fail given no ID",
-			Logger:    logrus.New(),
-			Validator: validator.New(),
-			Storage:   mockStorage{},
-			model: Table{
-				Name:       "foo",
-				MaximumBet: 1,
-				MinimumBet: 10,
-				Currency:   "GBP",
-			},
-			wantErr: ErrValidation,
-		},
-		{
-			name:      "expect fail given invalid maximum bet",
-			Logger:    logrus.New(),
-			Validator: validator.New(),
-			Storage:   mockStorage{},
-			model: Table{
-				ID:         uuid.New(),
-				Name:       "foo",
-				MaximumBet: 1,
-				MinimumBet: 10,
-				Currency:   "GBP",
-			},
-			wantErr: ErrValidation,
-		},
-		{
-			name:      "expect fail given invalid minimum bet",
-			Logger:    logrus.New(),
-			Validator: validator.New(),
-			Storage:   mockStorage{},
-			model: Table{
-				ID:         uuid.New(),
-				Name:       "foo",
-				MaximumBet: 10,
-				MinimumBet: 1,
-				Currency:   "GBP",
-			},
-			wantErr: ErrValidation,
-		},
-		{
-			name:      "expect fail given maximum bet less than minimum bet",
-			Logger:    logrus.New(),
-			Validator: validator.New(),
-			Storage:   mockStorage{},
-			model: Table{
-				ID:         uuid.New(),
-				Name:       "foo",
-				MaximumBet: 10,
-				MinimumBet: 20,
-				Currency:   "GBP",
-			},
-			wantErr: ErrValidation,
-		},
-		{
-			name:      "expect fail given invalid currency code",
-			Logger:    logrus.New(),
-			Validator: validator.New(),
-			Storage:   mockStorage{},
-			model: Table{
-				ID:         uuid.New(),
-				Name:       "foo",
-				MaximumBet: 10,
-				MinimumBet: 10,
-				Currency:   "foo",
-			},
-			wantErr: ErrValidation,
-		},
-		{
-			name:      "expect fail given storage error",
-			Logger:    logrus.New(),
-			Validator: validator.New(),
+			name:   "expect fail given storage error",
+			Logger: logrus.New(),
 			Storage: mockStorage{
 				GivenError: errors.New("foo"),
 			},
 			model: Table{
-				ID:         uuid.New(),
+				ID:         uuid.New().String(),
 				Name:       "foo",
 				MaximumBet: 10,
 				MinimumBet: 10,
@@ -314,7 +186,7 @@ func TestController_Update(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := New(tt.Logger, tt.Storage, tt.Validator)
+			c := New(tt.Logger, tt.Storage)
 			_, err := c.Update(context.Background(), tt.model)
 
 			if !cmp.Equal(err, tt.wantErr, cmpopts.EquateErrors()) {
@@ -326,43 +198,32 @@ func TestController_Update(t *testing.T) {
 
 func TestController_Delete(t *testing.T) {
 	tests := []struct {
-		name      string
-		Logger    *logrus.Logger
-		Validator *validator.Validate
-		Storage   StorageProvider
-		id        uuid.UUID
-		wantErr   error
+		name    string
+		Logger  *logrus.Logger
+		Storage StorageProvider
+		id      string
+		wantErr error
 	}{
 		{
-			name:      "expect success given valid table",
-			Logger:    logrus.New(),
-			Validator: validator.New(),
-			Storage:   mockStorage{},
-			id:        uuid.New(),
-			wantErr:   nil,
+			name:    "expect success given valid table",
+			Logger:  logrus.New(),
+			Storage: mockStorage{},
+			id:      uuid.New().String(),
+			wantErr: nil,
 		},
 		{
-			name:      "expect fail given no ID",
-			Logger:    logrus.New(),
-			Validator: validator.New(),
-			Storage:   mockStorage{},
-			id:        uuid.Nil,
-			wantErr:   ErrValidation,
-		},
-		{
-			name:      "expect fail given storage error",
-			Logger:    logrus.New(),
-			Validator: validator.New(),
+			name:   "expect fail given storage error",
+			Logger: logrus.New(),
 			Storage: mockStorage{
 				GivenError: errors.New("foo"),
 			},
-			id:      uuid.New(),
+			id:      uuid.New().String(),
 			wantErr: ErrDelete,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := New(tt.Logger, tt.Storage, tt.Validator)
+			c := New(tt.Logger, tt.Storage)
 			_, err := c.Delete(context.Background(), tt.id)
 
 			if !cmp.Equal(err, tt.wantErr, cmpopts.EquateErrors()) {
@@ -374,15 +235,15 @@ func TestController_Delete(t *testing.T) {
 
 type mockStorage struct {
 	GivenList  []Table
-	GivenID    uuid.UUID
+	GivenID    string
 	GivenError error
 }
 
-func (m mockStorage) Delete(_ context.Context, _ uuid.UUID) (uuid.UUID, error) {
+func (m mockStorage) Delete(_ context.Context, _ string) (string, error) {
 	return m.GivenID, m.GivenError
 }
 
-func (m mockStorage) Update(_ context.Context, _ Table) (uuid.UUID, error) {
+func (m mockStorage) Update(_ context.Context, _ Table) (string, error) {
 	return m.GivenID, m.GivenError
 }
 
@@ -390,6 +251,6 @@ func (m mockStorage) List(_ context.Context) ([]Table, error) {
 	return m.GivenList, m.GivenError
 }
 
-func (m mockStorage) Create(_ context.Context, _ Table) (uuid.UUID, error) {
+func (m mockStorage) Create(_ context.Context, _ Table) (string, error) {
 	return m.GivenID, m.GivenError
 }

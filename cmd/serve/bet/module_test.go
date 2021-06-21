@@ -26,7 +26,7 @@ func TestModule(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			Module(tt.router, tt.logger, tt.db, tt.validate)
+			Module(tt.router, tt.logger, tt.db)
 		})
 	}
 }

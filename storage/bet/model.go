@@ -4,14 +4,13 @@ import (
 	"time"
 
 	"github.com/clarke94/roulette-service/internal/pkg/bet"
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 // Bet is a storage model.
 type Bet struct {
-	ID        uuid.UUID `gorm:"primaryKey"`
-	TableID   uuid.UUID
+	ID        string `gorm:"primaryKey"`
+	TableID   string
 	Bet       string
 	Type      string
 	Amount    int64

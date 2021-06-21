@@ -5,7 +5,6 @@ import (
 	"errors"
 
 	"github.com/clarke94/roulette-service/internal/pkg/table"
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -24,12 +23,12 @@ func New(db *gorm.DB) Storage {
 }
 
 // Create inserts a new record for the given Table.
-func (s Storage) Create(ctx context.Context, model table.Table) (uuid.UUID, error) {
+func (s Storage) Create(ctx context.Context, model table.Table) (string, error) {
 	d := domainToStorage(model)
 
 	res := s.DB.WithContext(ctx).Create(&d)
 	if res.Error != nil {
-		return uuid.Nil, res.Error
+		return "", res.Error
 	}
 
 	return d.ID, nil
@@ -48,30 +47,30 @@ func (s Storage) List(ctx context.Context) ([]table.Table, error) {
 }
 
 // Update inserts a new record for the given Table.
-func (s Storage) Update(ctx context.Context, model table.Table) (uuid.UUID, error) {
+func (s Storage) Update(ctx context.Context, model table.Table) (string, error) {
 	d := domainToStorage(model)
 
 	res := s.DB.WithContext(ctx).Model(&d).Updates(&d)
 	if res.Error != nil {
-		return uuid.Nil, res.Error
+		return "", res.Error
 	}
 
 	if res.RowsAffected == 0 {
-		return uuid.Nil, errNoChange
+		return "", errNoChange
 	}
 
 	return d.ID, nil
 }
 
 // Delete deletes a table for the given ID.
-func (s Storage) Delete(ctx context.Context, id uuid.UUID) (uuid.UUID, error) {
+func (s Storage) Delete(ctx context.Context, id string) (string, error) {
 	res := s.DB.WithContext(ctx).Delete(&Table{}, id)
 	if res.Error != nil {
-		return uuid.Nil, res.Error
+		return "", res.Error
 	}
 
 	if res.RowsAffected == 0 {
-		return uuid.Nil, errNoChange
+		return "", errNoChange
 	}
 
 	return id, nil

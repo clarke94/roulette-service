@@ -4,14 +4,12 @@ import (
 	"context"
 	"github.com/clarke94/roulette-service/internal/pkg/bet"
 	"github.com/google/go-cmp/cmp"
-	"github.com/google/uuid"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"log"
 	"os"
-	"reflect"
 	"testing"
 )
 
@@ -22,30 +20,30 @@ func TestStorage_Create(t *testing.T) {
 		name    string
 		model   bet.Bet
 		ctx     context.Context
-		want    uuid.UUID
+		want    string
 		wantErr bool
 	}{
 		{
 			name: "expect success given valid bet",
 			model: bet.Bet{
-				ID:       uuid.Must(uuid.Parse("8117bb87-148c-4fb1-8971-a2d4373b3f19")),
-				TableID:  uuid.Must(uuid.Parse("8117bb87-148c-4fb1-8971-a2d4373b3f19")),
+				ID:       "8117bb87-148c-4fb1-8971-a2d4373b3f19",
+				TableID:  "8117bb87-148c-4fb1-8971-a2d4373b3f19",
 				Bet:      "foo",
 				Type:     "bar",
 				Amount:   10,
 				Currency: "GBP",
 			},
 			ctx:     context.Background(),
-			want:    uuid.Must(uuid.Parse("8117bb87-148c-4fb1-8971-a2d4373b3f19")),
+			want:    "8117bb87-148c-4fb1-8971-a2d4373b3f19",
 			wantErr: false,
 		},
 		{
 			name: "expect fail given id already exists",
 			model: bet.Bet{
-				ID: uuid.Must(uuid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")),
+				ID: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
 			},
 			ctx:     nil,
-			want:    uuid.Nil,
+			want:    "",
 			wantErr: true,
 		},
 	}
@@ -60,41 +58,6 @@ func TestStorage_Create(t *testing.T) {
 
 			if !cmp.Equal(got, tt.want) {
 				t.Fatal(cmp.Diff(got, tt.want))
-			}
-		})
-	}
-}
-
-func TestStorage_List(t *testing.T) {
-	type fields struct {
-		DB *gorm.DB
-	}
-	type args struct {
-		ctx     context.Context
-		tableID uuid.UUID
-		filters []bet.Bet
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		want    []bet.Bet
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			s := Storage{
-				DB: tt.fields.DB,
-			}
-			got, err := s.List(tt.args.ctx, tt.args.tableID, tt.args.filters...)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("List() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("List() got = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -163,8 +126,8 @@ func TestMain(m *testing.M) {
 
 	db.Create([]bet.Bet{
 		{
-			ID:       uuid.Must(uuid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")),
-			TableID:  uuid.Must(uuid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb")),
+			ID:       "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+			TableID:  "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
 			Bet:      "foo",
 			Type:     "bar",
 			Amount:   10,

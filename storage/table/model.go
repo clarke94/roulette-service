@@ -4,13 +4,12 @@ import (
 	"time"
 
 	"github.com/clarke94/roulette-service/internal/pkg/table"
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 // Table is a storage model.
 type Table struct {
-	ID         uuid.UUID `gorm:"primaryKey"`
+	ID         string `gorm:"primaryKey"`
 	Name       string
 	MaximumBet int
 	MinimumBet int

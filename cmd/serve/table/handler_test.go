@@ -49,15 +49,15 @@ func TestHandler_Create(t *testing.T) {
 		{
 			name: "expect 201 given table created",
 			controller: mockController{
-				GivenID: uuid.New(),
+				GivenID: uuid.New().String(),
 			},
-			body:     []byte(`{}`),
+			body:     []byte(`{"name":"foo", "maximumBet": 1000, "minimumBet": 100, "currency":"GBP"}`),
 			wantCode: http.StatusCreated,
 		},
 		{
 			name: "expect 400 given no body",
 			controller: mockController{
-				GivenID: uuid.New(),
+				GivenID: uuid.New().String(),
 			},
 			body:     nil,
 			wantCode: http.StatusBadRequest,
@@ -67,7 +67,7 @@ func TestHandler_Create(t *testing.T) {
 			controller: mockController{
 				GivenError: errors.New("foo"),
 			},
-			body:     []byte(`{}`),
+			body:     []byte(`{"name":"foo", "maximumBet": 1000, "minimumBet": 100, "currency":"GBP"}`),
 			wantCode: http.StatusBadRequest,
 		},
 	}
@@ -100,7 +100,7 @@ func TestHandler_List(t *testing.T) {
 			controller: mockController{
 				GivenList: []table.Table{
 					{
-						ID:         uuid.Nil,
+						ID:         "",
 						Name:       "Table 1",
 						MaximumBet: 10000,
 						MinimumBet: 1000,
@@ -146,15 +146,15 @@ func TestHandler_Update(t *testing.T) {
 		{
 			name: "expect 200 given table updated",
 			controller: mockController{
-				GivenID: uuid.New(),
+				GivenID: uuid.New().String(),
 			},
-			body:     []byte(`{}`),
+			body:     []byte(`{"id":"42bb1490-d28e-11eb-b8bc-0242ac130003", "name":"foo", "maximumBet": 1000, "minimumBet": 100, "currency":"GBP"}`),
 			wantCode: http.StatusOK,
 		},
 		{
 			name: "expect 400 given no body",
 			controller: mockController{
-				GivenID: uuid.New(),
+				GivenID: uuid.New().String(),
 			},
 			body:     nil,
 			wantCode: http.StatusBadRequest,
@@ -164,7 +164,7 @@ func TestHandler_Update(t *testing.T) {
 			controller: mockController{
 				GivenError: errors.New("foo"),
 			},
-			body:     []byte(`{}`),
+			body:     []byte(`{"id":"42bb1490-d28e-11eb-b8bc-0242ac130003", "name":"foo", "maximumBet": 1000, "minimumBet": 100, "currency":"GBP"}`),
 			wantCode: http.StatusBadRequest,
 		},
 	}
@@ -196,9 +196,9 @@ func TestHandler_Delete(t *testing.T) {
 		{
 			name: "expect 200 given table deleted",
 			controller: mockController{
-				GivenID: uuid.New(),
+				GivenID: uuid.New().String(),
 			},
-			id:       uuid.New().String(),
+			id:       "84b10ade-d28a-11eb-b8bc-0242ac130003",
 			wantCode: http.StatusOK,
 		},
 		{
@@ -212,7 +212,7 @@ func TestHandler_Delete(t *testing.T) {
 			controller: mockController{
 				GivenError: errors.New("foo"),
 			},
-			id:       uuid.New().String(),
+			id:       "84b10ade-d28a-11eb-b8bc-0242ac130003",
 			wantCode: http.StatusBadRequest,
 		},
 	}
@@ -237,15 +237,15 @@ func TestHandler_Delete(t *testing.T) {
 
 type mockController struct {
 	GivenList  []table.Table
-	GivenID    uuid.UUID
+	GivenID    string
 	GivenError error
 }
 
-func (m mockController) Delete(_ context.Context, _ uuid.UUID) (uuid.UUID, error) {
+func (m mockController) Delete(_ context.Context, _ string) (string, error) {
 	return m.GivenID, m.GivenError
 }
 
-func (m mockController) Update(_ context.Context, _ table.Table) (uuid.UUID, error) {
+func (m mockController) Update(_ context.Context, _ table.Table) (string, error) {
 	return m.GivenID, m.GivenError
 }
 
@@ -253,6 +253,6 @@ func (m mockController) List(_ context.Context) ([]table.Table, error) {
 	return m.GivenList, m.GivenError
 }
 
-func (m mockController) Create(_ context.Context, _ table.Table) (uuid.UUID, error) {
+func (m mockController) Create(_ context.Context, _ table.Table) (string, error) {
 	return m.GivenID, m.GivenError
 }
