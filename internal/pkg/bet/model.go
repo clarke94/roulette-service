@@ -22,16 +22,16 @@ type Update struct {
 
 // Result is the round result from a game.
 type Result struct {
-	Number  int      `json:"number"`
-	Color   string   `json:"color"`
-	Winners []Winner `json:"winners"`
+	Number  int
+	Color   string
+	Winners []Winner
 }
 
 // Winner is a winning bet from a round.
 type Winner struct {
-	BetID    uuid.UUID `json:"betId"`
-	Amount   int64     `json:"amount"`
-	Currency string    `json:"currency"`
+	BetID    uuid.UUID
+	Amount   int64
+	Currency string
 }
 
 const (

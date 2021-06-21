@@ -5,7 +5,6 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/Rhymond/go-money"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
@@ -183,8 +182,8 @@ func TestController_List(t *testing.T) {
 				t.Error(cmp.Diff(err, tt.wantErr, cmpopts.EquateErrors()))
 			}
 
-			if !cmp.Equal(bets, tt.wantBets, cmpopts.IgnoreFields(money.Money{}, "amount", "currency")) {
-				t.Error(cmp.Diff(bets, tt.wantBets, cmpopts.IgnoreFields(money.Money{}, "amount", "currency")))
+			if !cmp.Equal(bets, tt.wantBets) {
+				t.Error(cmp.Diff(bets, tt.wantBets))
 			}
 		})
 	}
