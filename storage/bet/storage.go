@@ -76,7 +76,7 @@ func (s Storage) Update(ctx context.Context, model bet.Bet) (string, error) {
 
 // Delete deletes a bet for the given table and ID.
 func (s Storage) Delete(ctx context.Context, tableID, id string) (string, error) {
-	res := s.DB.WithContext(ctx).Where(&Bet{TableID: tableID}).Delete(&Bet{}, id)
+	res := s.DB.WithContext(ctx).Where(&Bet{TableID: tableID}).Delete(&Bet{ID: id})
 	if res.Error != nil {
 		return "", res.Error
 	}

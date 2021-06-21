@@ -1,9 +1,9 @@
-package bet
+package test
 
 import (
-	"context"
-	"github.com/clarke94/roulette-service/internal/pkg/bet"
-	"github.com/google/go-cmp/cmp"
+	"github.com/clarke94/roulette-service/storage/bet"
+	"github.com/clarke94/roulette-service/storage/table"
+	"github.com/clarke94/roulette-service/test/data"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
 	"gorm.io/driver/postgres"
@@ -14,54 +14,6 @@ import (
 )
 
 var db *gorm.DB
-
-func TestStorage_Create(t *testing.T) {
-	tests := []struct {
-		name    string
-		model   bet.Bet
-		ctx     context.Context
-		want    string
-		wantErr bool
-	}{
-		{
-			name: "expect success given valid bet",
-			model: bet.Bet{
-				ID:       "8117bb87-148c-4fb1-8971-a2d4373b3f19",
-				TableID:  "8117bb87-148c-4fb1-8971-a2d4373b3f19",
-				Bet:      "foo",
-				Type:     "bar",
-				Amount:   10,
-				Currency: "GBP",
-			},
-			ctx:     context.Background(),
-			want:    "8117bb87-148c-4fb1-8971-a2d4373b3f19",
-			wantErr: false,
-		},
-		{
-			name: "expect fail given id already exists",
-			model: bet.Bet{
-				ID: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
-			},
-			ctx:     nil,
-			want:    "",
-			wantErr: true,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			s := New(db)
-
-			got, err := s.Create(tt.ctx, tt.model)
-			if !cmp.Equal(err != nil, tt.wantErr) {
-				t.Fatal(cmp.Diff(err != nil, tt.wantErr))
-			}
-
-			if !cmp.Equal(got, tt.want) {
-				t.Fatal(cmp.Diff(got, tt.want))
-			}
-		})
-	}
-}
 
 // TestMain connects to a database with docker to start integration testing.
 func TestMain(m *testing.M) {
@@ -119,21 +71,13 @@ func TestMain(m *testing.M) {
 		log.Fatalf("Could not connect to docker: %s", err)
 	}
 
-	err = db.AutoMigrate(Bet{})
+	err = db.AutoMigrate(table.Table{}, bet.Bet{})
 	if err != nil {
 		log.Fatalf("Could not migrate data: %s", err)
 	}
 
-	db.Create([]bet.Bet{
-		{
-			ID:       "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
-			TableID:  "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
-			Bet:      "foo",
-			Type:     "bar",
-			Amount:   10,
-			Currency: "GBP",
-		},
-	})
+	db.Create(data.TableData)
+	db.Create(data.BetData)
 
 	code := m.Run()
 

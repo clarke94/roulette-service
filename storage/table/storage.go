@@ -64,7 +64,7 @@ func (s Storage) Update(ctx context.Context, model table.Table) (string, error) 
 
 // Delete deletes a table for the given ID.
 func (s Storage) Delete(ctx context.Context, id string) (string, error) {
-	res := s.DB.WithContext(ctx).Delete(&Table{}, id)
+	res := s.DB.WithContext(ctx).Delete(&Table{ID: id})
 	if res.Error != nil {
 		return "", res.Error
 	}
